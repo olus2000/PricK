@@ -1,0 +1,89 @@
+API:
+	input on stack from top:
+	target,
+	length N,
+	N ascii-encoded characters from "0123456789+-*/"
+	return value on top of stack after termination
+
+memory layout:
+	0: target
+	1: length of input N
+	2: best fit
+	3: addr of permutation counting
+	4: dummy
+	5-N+4: permutation of input
+	N+5-2N+4: permutation counting
+
+method:
+	go through permutations of input interpretting them
+	update the best fit on every possible intermediate value
+	backtrack on stack/value underflow or division error
+	permutations are generated using a bad version of heaps algorithm
+	has very bad complexity if given too many digits and bad complexity overall
+	will not execute the example in reasonable time
+
+interpreter:
+	asumes all the featured discussed on the wiki:
+		builtin functions
+		second stack
+		number words
+	unknown words are noops
+	first two you can add to any interpreter using the code on the wiki
+
+: comment
+
+
+0 @	: target	1 @ : length
+2	: best	3 @	: perm
+5	: input
+
+48	: '0'	43	: '+'	45	: '-'	42	: '*'	47	: '/'
+
+>aux * aux> -- 1	: handle_mul
+
+>aux + aux> -- 1	: handle_add
+
+-- >aux swap ++ swap - 1 over 1 [ | drop -- aux> 1 0 0 ] [ 1 | drop aux> -- 0 ]	: handle_sub
+
+-- >aux 1 over 1 [ | drop over over / dup >aux * - 1 swap 1
+	[ | drop aux> drop aux> -- 0 0 0 ] [ 1 | aux> aux> 1 ] 0 0
+] [ 1 | drop aux> 0 ]	: handle_div
+
+1 over 1 [ '-' - | drop drop handle_div 0 0 0 ]
+over over [ '+' - | drop drop handle_sub 0 0 0 ]
+over over [ '*' - | drop drop handle_add 0 0 0 ]
+[ | handle_mul 0 ]	: handle_operator
+
+target over - over target - + target best @ - best @ target - + swap - 1 [ | best ! 0 0 ] drop	: is_best
+
+best @ 0 input -- >aux 1 length [ | aux> ++ dup >aux @
+	1 over 1 [ '/' - | drop '0' - swap ++ 1 0 0 ]
+	[ 1 | over -- dup 1 [ | drop handle_operator 0 swap 0 ] swap drop ] >aux over is_best aux>
+] ++ [ 1 | drop ] aux>	: eval
+
+perm over - dup dup 2 / 2 * - 1
+[ | swap ++ dup @ >aux swap 2 - [ 1 | dup ++ swap over @ swap ! ] aux> swap ! 0 0 0 ]
+drop drop	: skip_after
+
+dup >aux ++ input -
+[ 1 perm aux@ - dup 2 / 2 * - [ 1 | drop perm -- @ aux@ dup @ perm -- ! ! 0 ]
+	[ 1 | aux@ @ perm aux@ length + @ - -- dup @ aux@ ! ! ]
+	aux@ length + dup @ ++ dup rot ! ++ perm aux@ - - | 0 aux@ length + ! aux> -- >aux
+] aux>	: next_state
+
+eval dup skip_after next_state	: step
+
+1 dup rot [ 1 | >aux aux@ * aux> ++ ] drop	: factorial
+
+0 5 target - 1 [ | drop 9 0 ]	: worst_fit
+
+
+0 ! dup 1 ! dup 5 + 3 ! dup 2 * 5 + 4 !
+
+input swap [ 1 | >aux aux@ ! aux> ++ ] drop
+
+worst_fit best !
+
+input length factorial [ 4 - | step ]
+
+best @

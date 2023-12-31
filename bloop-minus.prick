@@ -1,0 +1,43 @@
+5 2
+
+
+
+
+2 [ 1 | >aux ] 0 0 !
+0
+
+1
+[ 2 [ 1 | aux> ] dup 2 [ 1 | swap >aux ]
+  1 [ 1 | aux> ] dup 1 [ 1 | swap >aux ] -
+| drop 0 1
+]
+1 swap 1 [ | 0 0 ]
+1 [ | 0
+
+1 [ 1 | aux> ] dup 1 [ 1 | swap >aux ] 1 +
+[ 1 swap 1 [ | drop dup 1 !=
+               dup 1 [ | 0 swap 0 ] swap drop 0 0 ]
+| 0
+
+1
+[ 0 @
+  2 [ 1 | aux> ] dup 2 [ 1 | swap >aux ] +
+  1 [ 1 | aux> ] dup 1 [ 1 | swap >aux ] != 1 swap 1 [ | drop 0 0 ]
+| drop 1 1
+]
+1 swap 1 [ | 0 0 ]
+1 [ | 0
+
+base @ 1 + 0 !
+
+0 ]
+
+]
+1 swap 1 [ | drop dup N !=
+  1 swap 1 [ | 0 0 0 ] swap drop 0 ]
+1 [ | 0 0 ]
+
+0 ]
+
+1 [ | drop 0 ] 0 @
+2 [ 1 | aux> drop ]
